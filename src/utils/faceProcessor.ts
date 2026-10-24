@@ -1,18 +1,15 @@
 /**
  * Face Processor for Halloween Mágico
- * Extracts real child face, removes background, applies smooth circular transparency mask (RGBA PNG)
- * Preserves exact facial features, skin tone, eyes, smile and hair without AI recreation.
- * Includes interactive background removal and "Modo Avatar Mágico".
+ * Extracts real child face, applies smooth circular transparency mask (RGBA PNG).
+ * Preserves exact facial features, skin tone, eyes, smile and hair cleanly without distortion.
+ * Allows adjusting face measurement (zoom) and centering (X, Y).
  */
 
 export interface FaceCropSettings {
-  centerX: number; // 0..1 relative to original image
-  centerY: number; // 0..1 relative to original image
-  zoom: number;    // 0.5 .. 3.0
-  radiusRatio: number; // 0.35 .. 0.5
-  removeBackground: boolean;
-  bgTolerance: number; // 15..65
-  avatarMode: boolean; // Magic Halloween avatar styling & glowing border
+  centerX: number; // 0..1 relative to original image (Horizontal)
+  centerY: number; // 0..1 relative to original image (Vertical)
+  zoom: number;    // 0.6 .. 3.0 (Medida / Tamaño de la carita)
+  radiusRatio?: number; // 0.46
 }
 
 export interface ProcessedFaceResult {
@@ -24,7 +21,7 @@ export interface ProcessedFaceResult {
 
 /**
  * Detect face center using native FaceDetector if available,
- * or color-luminance / skin-tone centroid analysis fallback.
+ * or skin-tone centroid analysis fallback.
  */
 export async function detectFaceCenter(img: HTMLImageElement): Promise<{ x: number; y: number; size: number }> {
   const w = img.naturalWidth || img.width;
@@ -48,13 +45,13 @@ export async function detectFaceCenter(img: HTMLImageElement): Promise<{ x: numb
     }
   }
 
-  // 2. High-precision Algorithmic Centroid & Face Area Fallback:
+  // 2. Algorithmic Centroid & Skin Tone Fallback:
   const sampleCanvas = document.createElement('canvas');
   sampleCanvas.width = 120;
   sampleCanvas.height = 120;
   const sctx = sampleCanvas.getContext('2d');
   if (!sctx) {
-    return { x: 0.5, y: 0.42, size: 0.55 };
+    return { x: 0.5, y: 0.45, size: 0.55 };
   }
 
   sctx.drawImage(img, 0, 0, 120, 120);
@@ -95,18 +92,19 @@ export async function detectFaceCenter(img: HTMLImageElement): Promise<{ x: numb
     const cx = (weightedX / totalSkinWeight) / 120;
     const cy = (weightedY / totalSkinWeight) / 120;
     return {
-      x: Math.min(Math.max(cx, 0.3), 0.7),
-      y: Math.min(Math.max(cy, 0.25), 0.6),
+      x: Math.min(Math.max(cx, 0.25), 0.75),
+      y: Math.min(Math.max(cy, 0.25), 0.65),
       size: 0.55
     };
   }
 
-  return { x: 0.5, y: 0.42, size: 0.55 };
+  return { x: 0.5, y: 0.45, size: 0.55 };
 }
 
 /**
- * Process the loaded image into an RGBA circular transparent PNG canvas
- * Includes background segmentation/removal and "Modo Avatar".
+ * Process the loaded image directly into a crisp, perfectly round circular cutout.
+ * No destructive background erasing or avatar filters: the child's photo remains
+ * 100% natural, sharp, round and perfectly framed.
  */
 export function renderCircularFaceCutout(
   img: HTMLImageElement,
@@ -125,15 +123,16 @@ export function renderCircularFaceCutout(
   // Clear transparent
   ctx.clearRect(0, 0, outputSize, outputSize);
 
-  // Compute crop box
-  const cropDimension = Math.min(w, h) / settings.zoom;
+  // Compute crop box based on zoom and centering
+  const zoom = Math.max(0.5, settings.zoom || 1.35);
+  const cropDimension = Math.min(w, h) / zoom;
   const cropX = settings.centerX * w - cropDimension / 2;
   const cropY = settings.centerY * h - cropDimension / 2;
 
   const center = outputSize / 2;
-  const radius = outputSize * settings.radiusRatio;
+  const radius = outputSize * (settings.radiusRatio || 0.46);
 
-  // Draw source image clipped by circle
+  // Draw source image strictly clipped into a circle
   ctx.save();
   ctx.beginPath();
   ctx.arc(center, center, radius, 0, Math.PI * 2);
@@ -146,68 +145,10 @@ export function renderCircularFaceCutout(
   );
   ctx.restore();
 
+  // Smooth anti-aliased edge around the outer boundary
   const imgData = ctx.getImageData(0, 0, outputSize, outputSize);
   const data = imgData.data;
-
-  // --- BACKGROUND REMOVAL (Sample boundary colors & chroma/edge separation) ---
-  if (settings.removeBackground) {
-    // Sample background colors along perimeter of circular region
-    const sampleAngles = 24;
-    const bgSamples: { r: number; g: number; b: number }[] = [];
-    const sampleR = radius - 8;
-
-    for (let a = 0; a < sampleAngles; a++) {
-      const rad = (a / sampleAngles) * Math.PI * 2;
-      // Focus especially on top/sides where wall or background is
-      const sx = Math.round(center + Math.cos(rad) * sampleR);
-      const sy = Math.round(center + Math.sin(rad) * sampleR);
-      const sidx = (sy * outputSize + sx) * 4;
-      bgSamples.push({
-        r: data[sidx],
-        g: data[sidx + 1],
-        b: data[sidx + 2],
-      });
-    }
-
-    const tol = settings.bgTolerance;
-    const tolSq = tol * tol;
-
-    // Apply distance check on pixels away from face center
-    for (let y = 0; y < outputSize; y++) {
-      const dy = y - center;
-      for (let x = 0; x < outputSize; x++) {
-        const dx = x - center;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const idx = (y * outputSize + x) * 4;
-
-        if (dist < radius && dist > radius * 0.45) {
-          const r = data[idx];
-          const g = data[idx + 1];
-          const b = data[idx + 2];
-
-          // Check if pixel matches any background sample
-          let minDiffSq = 999999;
-          for (let s = 0; s < bgSamples.length; s++) {
-            const bgs = bgSamples[s];
-            const dr = r - bgs.r;
-            const dg = g - bgs.g;
-            const db = b - bgs.b;
-            const diffSq = dr * dr + dg * dg + db * db;
-            if (diffSq < minDiffSq) minDiffSq = diffSq;
-          }
-
-          if (minDiffSq < tolSq) {
-            // Smoothly reduce alpha for background pixels
-            const factor = Math.max(0, Math.min(1, (minDiffSq / tolSq)));
-            data[idx + 3] = Math.round(data[idx + 3] * factor * factor);
-          }
-        }
-      }
-    }
-  }
-
-  // --- EDGE ANTI-ALIASING & CIRCLE CLIPPING ---
-  const rInner = radius - 4.0;
+  const rInner = radius - 3.0;
   const rOuter = radius;
 
   for (let y = 0; y < outputSize; y++) {
@@ -228,38 +169,6 @@ export function renderCircularFaceCutout(
 
   ctx.putImageData(imgData, 0, 0);
 
-  // --- MODO AVATAR MÁGICO ENHANCEMENTS ---
-  if (settings.avatarMode) {
-    ctx.save();
-    // 1. Magical glowing avatar circular border
-    ctx.beginPath();
-    ctx.arc(center, center, radius - 3, 0, Math.PI * 2);
-    ctx.strokeStyle = '#f97316'; // vibrant Halloween orange
-    ctx.lineWidth = 8;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(center, center, radius - 5, 0, Math.PI * 2);
-    ctx.strokeStyle = '#facc15'; // golden inner rim
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // 2. Cute rosy cheek blush overlay if in avatar mode
-    ctx.fillStyle = 'rgba(244, 114, 182, 0.22)';
-    ctx.beginPath();
-    ctx.arc(center - 75, center + 35, 32, 0, Math.PI * 2);
-    ctx.arc(center + 75, center + 35, 32, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 3. Cute sparkling stars on avatar border
-    ctx.fillStyle = '#fef08a';
-    drawStar(ctx, center + Math.cos(-Math.PI * 0.25) * (radius - 5), center + Math.sin(-Math.PI * 0.25) * (radius - 5), 5, 12, 6);
-    drawStar(ctx, center + Math.cos(-Math.PI * 0.75) * (radius - 5), center + Math.sin(-Math.PI * 0.75) * (radius - 5), 5, 12, 6);
-    drawStar(ctx, center + Math.cos(Math.PI * 0.45) * (radius - 5), center + Math.sin(Math.PI * 0.45) * (radius - 5), 5, 10, 5);
-
-    ctx.restore();
-  }
-
   const dataUrl = canvas.toDataURL('image/png');
   return {
     dataUrl,
@@ -270,9 +179,11 @@ export function renderCircularFaceCutout(
 }
 
 /**
- * Generate built-in friendly Halloween child sample faces (boy warlock, girl witch, cat face-paint)
+ * Generate built-in friendly child sample faces
  */
-export function createSampleFaceCanvas(type: 'boy' | 'girl' | 'cute_pumpkin', avatarMode = true): ProcessedFaceResult {
+export function createSampleFaceCanvas(
+  type: 'boy' | 'girl' | 'cute_pumpkin'
+): ProcessedFaceResult {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -382,16 +293,6 @@ export function createSampleFaceCanvas(type: 'boy' | 'girl' | 'cute_pumpkin', av
   ctx.rect(center - 22, center + 65, 44, 16);
   ctx.fill();
 
-  // Tongue
-  ctx.fillStyle = '#fb7185';
-  ctx.beginPath();
-  ctx.arc(center, center + 95, 24, Math.PI * 1.1, Math.PI * 1.9);
-  ctx.fill();
-
-  // Star cheek sticker
-  ctx.fillStyle = '#facc15';
-  drawStar(ctx, center + 120, center - 40, 5, 14, 7);
-
   ctx.restore();
 
   // Edge feathering
@@ -413,50 +314,10 @@ export function createSampleFaceCanvas(type: 'boy' | 'girl' | 'cute_pumpkin', av
   }
   ctx.putImageData(imgData, 0, 0);
 
-  if (avatarMode) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(center, center, radius - 3, 0, Math.PI * 2);
-    ctx.strokeStyle = '#f97316';
-    ctx.lineWidth = 7;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(center, center, radius - 5, 0, Math.PI * 2);
-    ctx.strokeStyle = '#facc15';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.restore();
-  }
-
   return {
     dataUrl: canvas.toDataURL('image/png'),
     canvas,
     width: size,
     height: size,
   };
-}
-
-function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, spikes: number, outerRadius: number, innerRadius: number) {
-  let rot = Math.PI / 2 * 3;
-  let x = cx;
-  let y = cy;
-  const step = Math.PI / spikes;
-
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - outerRadius);
-  for (let i = 0; i < spikes; i++) {
-    x = cx + Math.cos(rot) * outerRadius;
-    y = cy + Math.sin(rot) * outerRadius;
-    ctx.lineTo(x, y);
-    rot += step;
-
-    x = cx + Math.cos(rot) * innerRadius;
-    y = cy + Math.sin(rot) * innerRadius;
-    ctx.lineTo(x, y);
-    rot += step;
-  }
-  ctx.lineTo(cx, cy - outerRadius);
-  ctx.closePath();
-  ctx.fill();
 }

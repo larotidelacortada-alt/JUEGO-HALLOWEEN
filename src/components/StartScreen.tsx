@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Upload, Wand2, User, Play, AlertCircle, Sliders, Scissors } from 'lucide-react';
+import { Sparkles, Upload, Wand2, User, Play, AlertCircle, Sliders } from 'lucide-react';
 import { AvatarCostume } from '../types/game';
 import {
   detectFaceCenter,
@@ -32,11 +32,8 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   const [cropSettings, setCropSettings] = useState<FaceCropSettings>({
     centerX: 0.5,
     centerY: 0.45,
-    zoom: 1.25,
+    zoom: 1.35,
     radiusRatio: 0.46,
-    removeBackground: true,
-    bgTolerance: 35,
-    avatarMode: true,
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,7 +44,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   // Initialize with a default friendly sample face
   useEffect(() => {
     if (!previewUrl) {
-      const sample = createSampleFaceCanvas('boy', cropSettings.avatarMode);
+      const sample = createSampleFaceCanvas('boy');
       setPreviewUrl(sample.dataUrl);
       onFaceReady(sample.canvas, sample.dataUrl);
     }
@@ -61,7 +58,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
       setPreviewUrl(result.dataUrl);
       onFaceReady(result.canvas, result.dataUrl);
     } else if (activeSampleType) {
-      const sample = createSampleFaceCanvas(activeSampleType, newSettings.avatarMode);
+      const sample = createSampleFaceCanvas(activeSampleType);
       setPreviewUrl(sample.dataUrl);
       onFaceReady(sample.canvas, sample.dataUrl);
     }
@@ -99,13 +96,10 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             // Detect face center automatically
             const detected = await detectFaceCenter(img);
             const newSettings: FaceCropSettings = {
-              ...cropSettings,
               centerX: detected.x,
               centerY: detected.y,
               zoom: 1.35,
               radiusRatio: 0.46,
-              removeBackground: true,
-              avatarMode: true,
             };
             setCropSettings(newSettings);
 
@@ -114,7 +108,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             onFaceReady(result.canvas, result.dataUrl);
             setShowAdjustControls(true);
           } catch {
-            setErrorMsg('Hubo un error al procesar el rostro. Puedes ajustar el encuadre manualmente.');
+            setErrorMsg('Hubo un error al procesar el rostro. Puedes ajustar la medida manualmente.');
           } finally {
             setIsProcessing(false);
           }
@@ -136,7 +130,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
     setSourceImg(null);
     setActiveSampleType(type);
     setErrorMsg(null);
-    const sample = createSampleFaceCanvas(type, cropSettings.avatarMode);
+    const sample = createSampleFaceCanvas(type);
     setPreviewUrl(sample.dataUrl);
     onFaceReady(sample.canvas, sample.dataUrl);
   };
@@ -220,7 +214,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 )}
               </div>
               <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow">
-                Rostro 3D
+                Rostro Circular
               </div>
             </div>
 
@@ -249,7 +243,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                   className="px-3 py-2 rounded-xl bg-purple-800 hover:bg-purple-700 active:scale-95 text-purple-200 text-xs font-semibold flex items-center gap-1 shadow cursor-pointer border border-purple-500/40"
                 >
                   <Sliders className="w-3 h-3" />
-                  {showAdjustControls ? 'Ocultar Opciones' : 'Opciones'}
+                  {showAdjustControls ? 'Ocultar Medidas' : 'Ajustar Medida'}
                 </button>
               </div>
 
@@ -297,82 +291,35 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             </div>
           </div>
 
-          {/* BACKGROUND REMOVAL & AVATAR MODE TOGGLES */}
+          {/* CROP & MEASUREMENT ADJUSTMENT SLIDERS */}
           {showAdjustControls && (
-            <div className="mt-3.5 pt-3 border-t border-purple-500/30 space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {/* 1. Toggle Eliminar Fondo */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    applySettings({
-                      ...cropSettings,
-                      removeBackground: !cropSettings.removeBackground,
-                    })
-                  }
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
-                    cropSettings.removeBackground
-                      ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 shadow-md'
-                      : 'bg-purple-950/60 border-purple-600/50 text-purple-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Scissors className="w-3.5 h-3.5 text-emerald-400" />
-                    Eliminar Fondo
-                  </span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
-                      cropSettings.removeBackground
-                        ? 'bg-emerald-500 text-slate-950'
-                        : 'bg-purple-800 text-purple-300'
-                    }`}
-                  >
-                    {cropSettings.removeBackground ? 'ACTIVADO' : 'NO'}
-                  </span>
-                </button>
-
-                {/* 2. Toggle Modo Avatar */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    applySettings({
-                      ...cropSettings,
-                      avatarMode: !cropSettings.avatarMode,
-                    })
-                  }
-                  className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
-                    cropSettings.avatarMode
-                      ? 'bg-amber-950/80 border-amber-400 text-amber-200 shadow-md'
-                      : 'bg-purple-950/60 border-purple-600/50 text-purple-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    Modo Avatar Mágico
-                  </span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
-                      cropSettings.avatarMode
-                        ? 'bg-amber-400 text-slate-950'
-                        : 'bg-purple-800 text-purple-300'
-                    }`}
-                  >
-                    {cropSettings.avatarMode ? 'ACTIVADO' : 'NO'}
-                  </span>
-                </button>
+            <div className="mt-3.5 pt-3 border-t border-purple-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-amber-300 flex items-center gap-1">
+                  <Sliders className="w-3.5 h-3.5 text-orange-400" />
+                  Ajustar Medida y Posición en el Círculo:
+                </span>
+                <span className="text-[10px] text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded-full border border-purple-700/50">
+                  Forma Circular
+                </span>
               </div>
 
-              {/* Adjustments: Sliders for crop & tolerance */}
-              {sourceImg && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-2 text-[11px] text-purple-200">
-                  <div>
-                    <label className="block mb-0.5 font-semibold">
-                      Zoom ({cropSettings.zoom.toFixed(1)}x)
-                    </label>
+              {sourceImg ? (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-[11px] text-purple-200">
+                  {/* 1. Medida / Tamaño */}
+                  <div className="bg-purple-950/60 p-2 rounded-xl border border-purple-700/40">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-semibold text-amber-200">
+                        Medida / Tamaño
+                      </label>
+                      <span className="text-[10px] font-bold text-orange-300">
+                        {cropSettings.zoom.toFixed(1)}x
+                      </span>
+                    </div>
                     <input
                       type="range"
-                      min="0.8"
-                      max="2.5"
+                      min="0.7"
+                      max="2.8"
                       step="0.05"
                       value={cropSettings.zoom}
                       onChange={(e) =>
@@ -385,14 +332,20 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                     />
                   </div>
 
-                  <div>
-                    <label className="block mb-0.5 font-semibold">
-                      Altura Vertical
-                    </label>
+                  {/* 2. Altura Vertical */}
+                  <div className="bg-purple-950/60 p-2 rounded-xl border border-purple-700/40">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-semibold text-amber-200">
+                        Posición Vertical
+                      </label>
+                      <span className="text-[10px] font-bold text-orange-300">
+                        {Math.round(cropSettings.centerY * 100)}%
+                      </span>
+                    </div>
                     <input
                       type="range"
-                      min="0.2"
-                      max="0.8"
+                      min="0.15"
+                      max="0.85"
                       step="0.02"
                       value={cropSettings.centerY}
                       onChange={(e) =>
@@ -405,27 +358,35 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                     />
                   </div>
 
-                  {cropSettings.removeBackground && (
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="block mb-0.5 font-semibold">
-                        Corte de Fondo
+                  {/* 3. Posición Horizontal */}
+                  <div className="bg-purple-950/60 p-2 rounded-xl border border-purple-700/40">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-semibold text-amber-200">
+                        Posición Horizontal
                       </label>
-                      <input
-                        type="range"
-                        min="15"
-                        max="65"
-                        step="2"
-                        value={cropSettings.bgTolerance}
-                        onChange={(e) =>
-                          applySettings({
-                            ...cropSettings,
-                            bgTolerance: parseInt(e.target.value, 10),
-                          })
-                        }
-                        className="w-full accent-emerald-400 cursor-pointer"
-                      />
+                      <span className="text-[10px] font-bold text-orange-300">
+                        {Math.round(cropSettings.centerX * 100)}%
+                      </span>
                     </div>
-                  )}
+                    <input
+                      type="range"
+                      min="0.15"
+                      max="0.85"
+                      step="0.02"
+                      value={cropSettings.centerX}
+                      onChange={(e) =>
+                        applySettings({
+                          ...cropSettings,
+                          centerX: parseFloat(e.target.value),
+                        })
+                      }
+                      className="w-full accent-orange-400 cursor-pointer"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-2 text-xs text-purple-300/90 bg-purple-950/50 rounded-xl border border-purple-700/30">
+                  Sube la foto del niño/a para regular la medida (zoom) y centrar la carita dentro del círculo.
                 </div>
               )}
             </div>
