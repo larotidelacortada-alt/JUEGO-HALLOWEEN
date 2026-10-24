@@ -1,0 +1,6 @@
+{
+  "name": "Halloween Mágico",
+  "description": "Aventura 3D personalizada de Halloween para niños con avatar, recorrido interactivo y cartel de llegada.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,663 @@
+# PROMPT MAESTRO — DESARROLLO COMPLETO DE HALLOWEEN MÁGICO
+
+## 1. ROL Y OBJETIVO DEL PROYECTO
+
+Actuá como un equipo profesional integrado por:
+
+- Arquitecto de software especializado en aplicaciones web.
+- Desarrollador de videojuegos 3D con Three.js y React.
+- Especialista en animación 3D, cámaras, colisiones y controles.
+- Especialista en procesamiento de imágenes, segmentación y transparencias PNG.
+- Diseñador de experiencias interactivas infantiles.
+- Especialista en optimización, accesibilidad, pruebas y privacidad.
+
+Tu tarea es construir desde cero una aplicación web interactiva llamada **HALLOWEEN MÁGICO**.
+
+La aplicación permitirá que un adulto ingrese el nombre de un niño o una niña, cargue una fotografía de su rostro y genere una aventura 3D personalizada de Halloween.
+
+El niño jugará una travesía breve, recorrerá un camino mágico y llegará a una meta personalizada. En ese instante habrá una celebración con confeti violeta y naranja, aparecerá su nombre y el videojuego finalizará definitivamente.
+
+La aplicación debe ser funcional, no una demostración estática ni una maqueta visual.
+
+**Prioridades absolutas:**
+1. Que el rostro cargado se vea correctamente en el avatar.
+2. Que los controles funcionen desde el comienzo de la partida.
+3. Que el recorrido sea breve y fácil de completar.
+4. Que el nombre aparezca realmente en el cartel 3D de llegada.
+5. Que la celebración final se ejecute correctamente y la escena quede visible, congelada y personalizada.
+6. Que se pueda generar y descargar un video real de la aventura.
+7. Que el proyecto sea gratuito de ejecutar y mantener en su versión inicial, siempre que las dependencias elegidas lo permitan.
+
+No declares funciones como terminadas si solamente tienen una interfaz visual o código de ejemplo.
+
+---
+
+## 2. TECNOLOGÍA Y ARQUITECTURA
+
+Construí una aplicación web con las siguientes tecnologías:
+
+- React para la interfaz.
+- TypeScript para la lógica y el control de tipos.
+- Three.js, preferentemente mediante React Three Fiber si resulta compatible con el entorno, para el mundo 3D.
+- HTML Canvas para generar texturas dinámicas, incluida la del cartel personalizado.
+- Web Audio API para sonidos opcionales.
+- CanvasCaptureStream y MediaRecorder para grabar el recorrido y exportar el video cuando el navegador lo admita.
+- Procesamiento de imágenes en el navegador mediante bibliotecas gratuitas y compatibles con el entorno.
+- Almacenamiento temporal en memoria durante la sesión.
+
+Utilizá versiones estables y compatibles de las dependencias.
+
+No utilizar servicios pagos, APIs comerciales obligatorias, suscripciones, servidores propios, cuentas de usuario ni bases de datos en la primera versión.
+
+No incluir claves API privadas en el código del cliente.
+
+La aplicación debe poder ejecutarse en el entorno de desarrollo y publicarse como sitio web estático cuando sus dependencias lo permitan.
+
+Si alguna biblioteca necesita descargar modelos o recursos externos, informar esa dependencia y verificar que su licencia y condiciones sean compatibles con el proyecto. No fingir que un recurso externo está disponible si no se ha cargado correctamente.
+
+---
+
+## 3. DISEÑO VISUAL Y EXPERIENCIA INFANTIL
+
+Crear una experiencia 3D atractiva, mágica y apropiada para niños.
+
+### Dirección artística
+
+- Estética de videojuego 3D de Halloween infantil.
+- Paleta principal: violeta, naranja, negro suave y detalles amarillos cálidos.
+- Iluminación nocturna mágica, luna, pequeñas luces y ambiente de cuento.
+- Camino claramente identificable que conduzca hacia la llegada.
+- Calabazas decorativas, árboles fantásticos, dulces y elementos flotantes.
+- Personajes simpáticos, expresivos y no aterradores.
+- Escenario con profundidad real, perspectiva, suelo y objetos tridimensionales.
+- Cámara estable que permita ver al personaje y anticipar el camino.
+
+Evitar un diseño excesivamente oscuro, aterrador o confuso.
+
+La interfaz debe ser sencilla: botones grandes, instrucciones cortas, textos legibles y una experiencia adecuada para niños.
+
+No recargar la pantalla con menús, paneles o elementos que distraigan de la aventura.
+
+---
+
+## 4. PANTALLA DE INICIO Y PERSONALIZACIÓN
+
+Antes de iniciar el juego, mostrar una pantalla con:
+
+- Título: «HALLOWEEN MÁGICO».
+- Una ilustración o vista previa del mundo 3D.
+- Campo para ingresar el nombre del niño o la niña.
+- Botón para cargar una fotografía.
+- Vista previa de la cara procesada.
+- Botón «COMENZAR AVENTURA».
+
+### Nombre
+
+El nombre ingresado debe conservarse durante toda la sesión.
+
+Utilizar una única fuente de estado compartido para que el mismo nombre llegue correctamente al avatar, al cartel 3D y al mensaje final.
+
+Aceptar tildes, espacios y caracteres válidos. Evitar nombres vacíos y controlar el contenido para que no pueda romper el diseño o introducir código ejecutable.
+
+### Fotografía
+
+Permitir seleccionar una imagen PNG, JPG o JPEG.
+
+Validar el tipo y el tamaño del archivo. Mostrar errores comprensibles cuando el archivo sea inválido.
+
+No comenzar una partida con un rostro que haya fallado en el procesamiento sin informar al usuario.
+
+La aplicación debe mostrar una vista previa clara antes de iniciar la aventura.
+
+---
+
+## 5. EXTRACCIÓN REAL DEL ROSTRO Y PNG TRANSPARENTE
+
+Esta funcionalidad es crítica y debe implementarse de manera real.
+
+El adulto carga una fotografía y la aplicación extrae la cara original para utilizarla en el avatar 3D.
+
+### Requisitos de procesamiento
+
+1. Detectar la cara y encuadrarla automáticamente.
+2. Eliminar únicamente el fondo de la fotografía, preservando los rasgos originales.
+3. Conservar ojos, nariz, boca, expresión, tono de piel, cabello visible y proporciones faciales.
+4. No inventar, redibujar ni sustituir el rostro con una imagen generada por IA.
+5. Recortar la imagen alrededor de la cara y centrarla sin deformarla.
+6. Crear un recorte circular mediante una máscara de transparencia alfa real.
+7. Exportar una imagen PNG RGBA.
+8. Hacer transparentes los píxeles exteriores al círculo.
+9. Eliminar los restos de fondo y reducir los halos blancos o de color en los bordes.
+10. No añadir marcos blancos, bordes decorativos ni fondos sólidos.
+
+La cara debe ocupar una proporción suficientemente grande del círculo para que sus rasgos sean claramente visibles.
+
+No incluir demasiado cuerpo, espacio vacío o fondo original.
+
+### Tecnología de eliminación del fondo
+
+Implementar una solución real de segmentación o eliminación del fondo compatible con el navegador. Priorizar una biblioteca gratuita que permita procesar la imagen localmente.
+
+Si se necesita un modelo de segmentación, integrarlo y verificar su carga, licencia, compatibilidad y funcionamiento.
+
+No utilizar una simple eliminación por color que destruya cabello, piel u otros detalles.
+
+Si la detección falla, mostrar un error y permitir volver a cargar la fotografía. No entregar silenciosamente un PNG con el fondo intacto.
+
+### Integración en el avatar
+
+La imagen procesada debe aplicarse realmente al personaje 3D.
+
+- Integrar el rostro en la zona frontal de la cabeza.
+- Ajustar escala, posición y orientación para que coincidan con el modelo.
+- Mantener la cara legible y sin deformaciones.
+- Evitar que la imagen quede flotando delante de la cabeza o se vea como un rectángulo.
+- Evitar bordes blancos, geometría atravesando el rostro y problemas de profundidad.
+- Mantener el rostro alineado con la cabeza durante caminatas, saltos y giros.
+- Utilizar una superficie facial compatible con la geometría del avatar, adaptando su curvatura cuando sea necesario.
+
+El recorte circular debe tener transparencia real, pero su integración con la cabeza debe verse natural y no como una fotografía pegada de manera descuidada.
+
+Si no existe un modelo 3D con una geometría facial compatible, crear o adaptar una cabeza estilizada que permita integrar la imagen. No afirmar que se ha reconstruido un rostro 3D completo a partir de una foto si en realidad se utiliza una textura facial.
+
+### Privacidad
+
+Procesar la fotografía localmente cuando sea posible. No enviarla a servicios externos sin consentimiento explícito.
+
+Mantenerla temporalmente en memoria y liberar los recursos cuando el usuario reinicie o cierre la experiencia.
+
+---
+
+## 6. CREACIÓN DEL AVATAR 3D
+
+Crear un personaje infantil estilizado en 3D, con cuerpo, cabeza, brazos y piernas.
+
+El personaje debe incorporar la cara personalizada y conservarla visible durante la partida.
+
+### Requisitos
+
+- Proporciones simpáticas, aptas para niños.
+- Cuerpo completo y ropa temática de Halloween.
+- Cabeza y cuello correctamente conectados al cuerpo.
+- Animación de reposo.
+- Animación de caminar.
+- Animación de salto.
+- Animación de aterrizaje.
+- Animación de victoria.
+
+Utilizar un modelo 3D con rig y animaciones compatibles cuando sea posible. Si no se dispone de recursos externos, construir un personaje procedural estilizado con geometría y animaciones propias.
+
+No depender de un archivo 3D inexistente ni de una URL ficticia.
+
+La cara personalizada debe mantenerse correctamente alineada con la cabeza durante todas las animaciones.
+
+---
+
+## 7. MUNDO 3D Y RECORRIDO CORTO
+
+Crear un único escenario 3D con un camino claramente visible que conduzca desde el punto inicial hasta el cartel de llegada.
+
+El recorrido debe durar aproximadamente **45 a 90 segundos en una partida normal**, según la habilidad del jugador.
+
+No crear varios niveles ni una aventura larga.
+
+### Elementos del escenario
+
+- Camino principal.
+- Calabazas iluminadas.
+- Caramelos coleccionables.
+- Fantasmitas voladores.
+- Brujitas montadas en escobas.
+- Decoraciones de Halloween.
+- Cartel de llegada visible al final del camino.
+
+Los elementos deben distribuirse para dar vida al escenario sin impedir que el jugador identifique el recorrido.
+
+No colocar obstáculos injustos ni exigir maniobras difíciles para alcanzar la meta.
+
+### Caramelos
+
+Colocar algunos caramelos a lo largo del camino.
+
+Cuando el personaje entre en contacto con uno, recogerlo, actualizar el contador y reproducir una animación breve.
+
+Evitar que los caramelos puedan recogerse infinitas veces o que el sistema de colisiones se active repetidamente.
+
+### Calabazas
+
+Incorporar calabazas decorativas y al menos una calabaza interactiva que se ilumine o active un efecto cuando el personaje se acerque o la toque.
+
+Esta interacción debe ser breve y no bloquear el recorrido.
+
+### Fantasmitas
+
+Crear fantasmas amistosos tridimensionales que floten y recorran diferentes zonas.
+
+- Animación suave de subida y bajada.
+- Velocidades y trayectorias variadas.
+- Pequeños giros y movimientos naturales.
+- Escalas y distancias que aporten profundidad.
+- Apariencia simpática, no aterradora.
+
+### Brujitas en escobas
+
+Crear brujitas tridimensionales que vuelen sobre el escenario montadas en sus escobas.
+
+- Movimiento de vuelo continuo.
+- Trayectorias curvas.
+- Variación de alturas y velocidades.
+- Balanceo natural del personaje y la escoba.
+- Aparición en diferentes sectores del escenario.
+
+Los fantasmas y las brujitas deben ser elementos animados reales de la escena 3D, no imágenes estáticas superpuestas.
+
+Optimizar la cantidad de objetos, luces y partículas para mantener un rendimiento fluido.
+
+---
+
+## 8. CONTROLES FUNCIONALES DESDE EL INICIO
+
+La jugabilidad debe funcionar inmediatamente cuando la escena esté cargada y la partida pase al estado «EN JUEGO».
+
+### Teclado
+
+- W o flecha arriba: avanzar.
+- S o flecha abajo: retroceder.
+- A o flecha izquierda: desplazarse a la izquierda.
+- D o flecha derecha: desplazarse a la derecha.
+- Barra espaciadora: saltar.
+
+### Comportamiento
+
+- Comenzar a caminar al presionar una tecla de movimiento.
+- Detener el desplazamiento al soltarla.
+- Permitir cambios de dirección fluidos.
+- Permitir saltar sin que el personaje atraviese el suelo.
+- Evitar que el personaje atraviese los límites del escenario.
+- Mantener las animaciones sincronizadas con el movimiento real.
+- Impedir que las teclas dejen al personaje moviéndose indefinidamente.
+- Evitar que las flechas o la barra espaciadora desplacen la página mientras el juego está activo.
+- Gestionar correctamente el foco de la ventana y la liberación de teclas.
+- Evitar bloqueos al recoger caramelos o activar elementos decorativos.
+
+Los eventos de teclado deben registrarse y limpiarse correctamente durante el ciclo de vida de React.
+
+### Dispositivos táctiles
+
+Agregar controles visibles para teléfonos y tabletas, con botones de dirección y salto.
+
+No mostrar controles táctiles sin funcionalidad real.
+
+---
+
+## 9. CÁMARA Y PRESENTACIÓN DEL JUEGO
+
+Crear una cámara en tercera persona que permita seguir al personaje sin perder de vista el camino.
+
+- Mantener al avatar dentro del encuadre.
+- Evitar movimientos bruscos.
+- Ajustar la distancia y altura para facilitar la navegación.
+- No atravesar paredes, suelo u objetos de manera evidente.
+- Evitar que los elementos decorativos bloqueen la visión.
+- Mantener una perspectiva apropiada para un juego infantil.
+
+Al acercarse a la meta, preparar progresivamente el encuadre para mostrar el personaje y el cartel de llegada.
+
+La cámara debe adaptarse al tamaño de la pantalla, tanto en computadora como en dispositivos móviles.
+
+---
+
+## 10. CARTEL 3D DE LLEGADA PERSONALIZADO
+
+El cartel de llegada debe existir físicamente dentro del escenario 3D y ser visible desde el camino antes de que el jugador llegue.
+
+Debe mostrar claramente:
+
+**LLEGADA**
+
+Y también el nombre del niño o la niña.
+
+Por ejemplo, si el nombre ingresado es Santino:
+
+**LLEGADA**
+**SANTINO**
+
+### Implementación técnica
+
+- Crear el cartel con geometría 3D o una estructura visual equivalente integrada en el mundo.
+- Renderizar el texto en su superficie frontal mediante una textura dinámica, CanvasTexture o un sistema equivalente.
+- Actualizar la textura utilizando el nombre real de la sesión.
+- Mantener el texto orientado correctamente hacia el jugador.
+- Ajustar el tamaño de letra según la longitud del nombre.
+- Evitar que el texto se corte, se deforme, parpadee o quede oculto por problemas de profundidad.
+- Utilizar contraste suficiente para garantizar su legibilidad.
+- Colocar el cartel en la meta real del camino, no en un menú ni en una pantalla independiente.
+
+No basta con que el nombre exista en el estado de React: tiene que verse físicamente en el cartel de la escena 3D.
+
+---
+
+## 11. DETECCIÓN DE LA LLEGADA
+
+Crear un sistema de detección de meta confiable.
+
+Cuando el personaje alcance físicamente la zona de llegada, ejecutar una única transición del estado de juego.
+
+Utilizar una zona de activación o colisión claramente definida.
+
+La transición debe impedir que el evento se dispare varias veces por fotogramas consecutivos.
+
+No activar la llegada antes de que el personaje alcance el destino real.
+
+No exigir que el niño encuentre un botón escondido para finalizar.
+
+---
+
+## 12. CELEBRACIÓN FINAL CON CONFETI
+
+En el momento exacto en que el personaje llega al cartel, lanzar una celebración de Halloween.
+
+### Efecto visual
+
+- Explosión inicial de papelitos hacia arriba y hacia los costados.
+- Confeti violeta y naranja como colores principales.
+- Algunos detalles amarillos cálidos opcionales.
+- Rotación de las partículas.
+- Caída gradual por gravedad.
+- Variación de tamaños y trayectorias.
+- Efecto festivo, mágico y claramente visible.
+
+Crear partículas reales animadas dentro del escenario 3D o mediante un sistema equivalente que se integre correctamente con la cámara y la grabación.
+
+El confeti debe activarse una sola vez.
+
+No tapar por completo el rostro, el cartel ni el nombre.
+
+Permitir que las partículas terminen de caer antes de congelar definitivamente la escena.
+
+---
+
+## 13. MENSAJE FINAL PERSONALIZADO
+
+Al llegar, mostrar el siguiente mensaje:
+
+**«¡LLEGASTE, [NOMBRE]!»**
+
+El texto debe utilizar el nombre real ingresado al comenzar la aventura.
+
+Ejemplo:
+
+**¡LLEGASTE, SANTINO!**
+
+### Requisitos visuales
+
+- Tipografía festiva, infantil y legible.
+- Colores coordinados con el violeta y el naranja.
+- Tamaño adaptable a nombres largos.
+- Sin letras cortadas ni superpuestas.
+- Posición visible junto al personaje y al cartel de llegada.
+- Contraste suficiente con el fondo.
+- No tapar el rostro ni el trofeo.
+
+Mantener todos estos elementos visibles simultáneamente:
+
+1. El personaje 3D con la cara personalizada.
+2. El cartel físico «LLEGADA» con el nombre.
+3. El mensaje «¡LLEGASTE, [NOMBRE]!».
+4. La decoración del escenario.
+5. El confeti durante su celebración.
+
+---
+
+## 14. ESCENA FINAL CONGELADA
+
+El juego debe terminar exactamente en la llegada. No debe continuar con ninguna otra aventura.
+
+### Secuencia obligatoria
+
+1. El personaje alcanza la meta.
+2. Se detienen los controles de movimiento.
+3. Se activa la celebración con confeti.
+4. Aparece el mensaje personalizado.
+5. El personaje ejecuta una breve animación de victoria.
+6. El personaje queda orientado hacia adelante, mirando a la cámara.
+7. El personaje sostiene un trofeo de manera visualmente coherente o adopta una pose de victoria junto a él.
+8. El cartel de llegada y el nombre permanecen visibles.
+9. La cámara adopta el encuadre final.
+10. El confeti termina de caer.
+11. La escena se congela y permanece visible.
+
+### Estado final
+
+Implementar un estado explícito, por ejemplo `VICTORY`, que impida volver a ejecutar la lógica de movimiento o de recorrido.
+
+Al finalizar:
+
+- No permitir continuar caminando.
+- No permitir abandonar la zona de llegada con los controles.
+- No iniciar otra etapa.
+- No crear otra meta ni otro objetivo.
+- No reiniciar automáticamente.
+- No hacer desaparecer el cartel.
+- No hacer desaparecer el personaje.
+- No mover la cámara después de fijar el encuadre.
+- No ocultar el mensaje final.
+- No cerrar la pantalla automáticamente por un temporizador.
+
+El personaje, el cartel y el mensaje deben permanecer visibles hasta que el usuario decida volver a jugar o salir.
+
+La interfaz puede ofrecer un botón «VOLVER A JUGAR», pero no debe activarse automáticamente ni permitir que el juego continúe sin una decisión explícita.
+
+---
+
+## 15. GENERACIÓN AUTOMÁTICA DEL VIDEO DE LA AVENTURA
+
+La aplicación debe intentar grabar automáticamente el recorrido y la celebración final para generar un recuerdo personalizado.
+
+### Requisitos
+
+- Iniciar la grabación cuando comienza la partida.
+- Capturar el mundo 3D, el personaje, el cartel, el nombre y la celebración.
+- Mantener la grabación activa durante el recorrido.
+- Incluir la secuencia de llegada y unos segundos de la composición final.
+- Finalizar la grabación de manera correcta.
+- Mostrar una opción para reproducir y descargar el video.
+- Mantener la escena final congelada en pantalla después de terminar la grabación.
+
+Utilizar `canvas.captureStream()` y `MediaRecorder` cuando estén disponibles y sean compatibles con el contexto de renderizado.
+
+Si la captura del canvas no incluye la interfaz HTML, componer los elementos necesarios dentro de la escena grabada o implementar una composición compatible. No prometer una grabación completa si solamente se captura el escenario sin el mensaje final.
+
+### Formato
+
+- Utilizar WebM cuando sea el formato compatible disponible.
+- Detectar los tipos MIME admitidos por el navegador.
+- No cambiar la extensión de un archivo para simular que es MP4.
+- Si no es posible grabar, mostrar un mensaje claro y permitir repetir o descargar lo que realmente se haya generado.
+- No generar un enlace de descarga ficticio ni afirmar que el video existe si la grabación falló.
+
+La grabación no debe impedir que el juego funcione con fluidez.
+
+---
+
+## 16. ESTADOS DE LA APLICACIÓN
+
+Organizar el flujo con estados explícitos y transiciones controladas.
+
+Como mínimo:
+
+- `START`: pantalla inicial.
+- `PROCESSING_PHOTO`: procesando la fotografía.
+- `READY`: avatar y escena preparados.
+- `PLAYING`: partida activa.
+- `ARRIVAL`: activación de la meta y celebración.
+- `VICTORY`: escena final congelada.
+- `RECORDING_FINALIZATION`: finalizando la grabación.
+- `VIDEO_READY`: video disponible.
+- `ERROR`: error recuperable con instrucciones claras.
+
+No permitir que un estado de error o de procesamiento deje los controles bloqueados indefinidamente.
+
+La transición a `VICTORY` debe ser irreversible dentro de esa partida. Solo se podrá salir de ella mediante una acción explícita de reinicio o salida.
+
+Si la grabación tarda más en finalizar, conservar la escena final visible mientras se procesa el archivo.
+
+---
+
+## 17. ESTRUCTURA Y CALIDAD DEL CÓDIGO
+
+Organizar el proyecto en componentes y módulos claros. Adaptar los nombres a la estructura que realmente se implemente.
+
+Ejemplos de módulos:
+
+- `App.tsx`: aplicación y flujo general.
+- `StartScreen.tsx`: nombre y carga de fotografía.
+- `FaceProcessor.ts`: eliminación de fondo y recorte circular.
+- `Avatar3D.tsx`: personaje y rostro personalizado.
+- `HalloweenWorld.tsx`: escenario.
+- `PlayerController.ts`: movimiento y salto.
+- `Collectibles.tsx`: caramelos y objetos interactivos.
+- `FlyingGhosts.tsx`: fantasmitas.
+- `FlyingWitches.tsx`: brujitas.
+- `ArrivalSign.tsx`: cartel 3D con nombre.
+- `ConfettiEffect.tsx`: celebración.
+- `VictoryScene.tsx`: pose, trofeo y encuadre final.
+- `GameState.ts`: estados y transiciones.
+- `VideoRecorder.ts`: grabación y descarga.
+
+Estos nombres son una guía de organización, no una obligación de crear archivos vacíos. Implementar el código real necesario y evitar duplicar la lógica.
+
+Mantener una única fuente de verdad para el nombre, la fotografía, el estado de la partida y la grabación.
+
+Limpiar correctamente los eventos, las animaciones, los recursos gráficos y las texturas cuando corresponda.
+
+---
+
+## 18. PRIVACIDAD Y SEGURIDAD
+
+Como la aplicación está destinada a una experiencia infantil:
+
+- No solicitar datos personales innecesarios.
+- No exigir registro ni contraseña.
+- No incorporar publicidad, seguimiento ni analítica innecesaria.
+- No transmitir fotografías a servicios externos sin consentimiento explícito.
+- No guardar las fotografías en servidores ni en bases de datos en la primera versión.
+- Evitar conservar las imágenes más tiempo del necesario.
+- Revocar las URL temporales y liberar las texturas cuando se reinicie la experiencia.
+- Validar los archivos cargados y manejar los errores de manera segura.
+
+---
+
+## 19. DISEÑO RESPONSIVE Y RENDIMIENTO
+
+La aplicación debe funcionar en computadoras y dispositivos móviles modernos.
+
+- Adaptar el canvas 3D al tamaño de la ventana.
+- Mantener los textos dentro de la pantalla.
+- Ajustar la cámara al dispositivo.
+- Ofrecer controles táctiles cuando no haya teclado.
+- Evitar que la interfaz tape al personaje o el camino.
+- Optimizar geometrías, materiales, partículas y luces.
+- Evitar fugas de memoria por recreación innecesaria de recursos.
+- Mostrar un indicador de carga mientras se prepara la escena.
+
+No ocultar elementos importantes en pantallas pequeñas.
+
+---
+
+## 20. PLAN DE PRUEBAS Y CRITERIOS DE ACEPTACIÓN
+
+Antes de dar el proyecto por terminado, ejecutar pruebas reales en la aplicación.
+
+### Prueba A — Personalización
+
+- Introducir un nombre.
+- Cargar una fotografía.
+- Comprobar que se elimina el fondo.
+- Verificar que el PNG tiene transparencia real.
+- Confirmar que la cara está centrada, grande y reconocible.
+- Comprobar que el avatar muestra esa misma cara correctamente.
+
+### Prueba B — Movimiento
+
+- Comenzar la partida.
+- Mover al personaje inmediatamente con el teclado.
+- Probar las cuatro direcciones y el salto.
+- Confirmar que las animaciones y las colisiones funcionan.
+- Verificar que los controles táctiles funcionan cuando corresponda.
+
+### Prueba C — Mundo 3D
+
+- Confirmar que los caramelos se pueden recoger.
+- Verificar que la calabaza interactiva responde.
+- Comprobar que los fantasmas vuelan.
+- Comprobar que las brujitas se desplazan en sus escobas.
+- Confirmar que el camino conduce claramente hacia la meta.
+
+### Prueba D — Llegada
+
+- Completar el recorrido.
+- Verificar que el personaje alcanza realmente la zona final.
+- Confirmar que el cartel físico muestra «LLEGADA» y el nombre correcto.
+- Comprobar que el confeti violeta y naranja se dispara una sola vez.
+- Confirmar que aparece «¡LLEGASTE, [NOMBRE]!» sin recortes.
+
+### Prueba E — Final
+
+- Comprobar que el personaje se orienta hacia la cámara.
+- Verificar que el trofeo está visible.
+- Confirmar que la cara personalizada, el cartel y el mensaje se ven juntos.
+- Verificar que el confeti termina de caer.
+- Confirmar que el juego queda congelado y no continúa.
+- Comprobar que la escena permanece visible hasta una acción explícita del usuario.
+
+### Prueba F — Video
+
+- Comprobar que la grabación comienza correctamente.
+- Confirmar que contiene el recorrido y la celebración final.
+- Verificar que el archivo se puede reproducir y descargar.
+- Comprobar que los errores de grabación se informan sin bloquear el juego.
+
+### Prueba G — Adaptabilidad
+
+- Probar distintas dimensiones de ventana.
+- Verificar que el cartel y los textos no se cortan.
+- Probar nombres de distinta longitud.
+- Revisar la consola y corregir los errores detectados.
+
+Si una prueba no puede ejecutarse en el entorno disponible, indicar claramente qué quedó sin verificar. No inventar resultados ni afirmar que se superaron pruebas que no se realizaron.
+
+---
+
+## 21. ORDEN DE IMPLEMENTACIÓN
+
+Construir la aplicación completa en el siguiente orden:
+
+1. Crear la estructura base y verificar que arranca.
+2. Implementar la carga de nombre y fotografía.
+3. Implementar la eliminación real del fondo y el recorte circular PNG.
+4. Crear el avatar 3D e integrar el rostro.
+5. Construir el escenario y el recorrido corto.
+6. Implementar el movimiento, el salto y las colisiones.
+7. Añadir los caramelos, la calabaza, los fantasmas y las brujitas.
+8. Implementar el cartel 3D personalizado.
+9. Crear la llegada, el confeti y el mensaje de victoria.
+10. Implementar la escena final congelada con trofeo.
+11. Añadir la grabación y descarga del video.
+12. Ejecutar las pruebas, corregir errores y verificar el resultado.
+
+No detenerse después de crear la pantalla inicial o un prototipo estático. Completar las funcionalidades prioritarias en el proyecto.
+
+Si una función avanzada requiere una decisión técnica, elegir la alternativa gratuita más fiable compatible con la arquitectura y continuar. No sustituir silenciosamente una función por una simulación visual.
+
+## 22. RESULTADO FINAL ESPERADO
+
+Entregar una aplicación web funcional llamada **HALLOWEEN MÁGICO**, que permita personalizar al protagonista con una fotografía y un nombre, recorrer un escenario 3D breve con controles funcionales y elementos mágicos de Halloween, y finalizar en una meta personalizada.
+
+La llegada debe mostrar simultáneamente el cartel 3D «LLEGADA» con el nombre del niño, el mensaje «¡LLEGASTE, [NOMBRE]!», una explosión de confeti violeta y naranja y el avatar mirando hacia adelante con su trofeo.
+
+Después de esa celebración, el videojuego termina. La escena queda congelada, visible y personalizada. No hay una segunda etapa ni un recorrido adicional.
+
+El video de la aventura debe generarse y descargarse cuando el navegador y el entorno lo permitan, sin simular funciones inexistentes.
+
+**Instrucción final:** implementá la aplicación sobre archivos reales, verificá que compile y se ejecute, probá los flujos principales y corregí los errores. Priorizá la funcionalidad comprobable por encima de agregar efectos visuales que no funcionen.
