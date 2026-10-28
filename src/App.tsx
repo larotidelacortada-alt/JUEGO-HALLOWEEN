@@ -51,6 +51,8 @@ export default function App() {
 
   // Touch device and tablet / mobile screen detection
   const [isTouchDevice, setIsTouchDevice] = useState<boolean>(false);
+  const [showTouchControls, setShowTouchControls] = useState<boolean>(true);
+
   useEffect(() => {
     const checkTouch = () => {
       const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -256,10 +258,13 @@ export default function App() {
             }
             interactivePumpkinCount={interactivePumpkinHits}
             recordingSeconds={recordingSeconds}
+            showTouchControls={showTouchControls}
+            onToggleTouchControls={() => setShowTouchControls((prev) => !prev)}
+            hasTouchDevice={isTouchDevice}
           />
 
           {/* On-screen controls for mobile/touch screens */}
-          {isTouchDevice && (
+          {isTouchDevice && showTouchControls && (
             <TouchControls onInputUpdate={updateInput} />
           )}
         </>
