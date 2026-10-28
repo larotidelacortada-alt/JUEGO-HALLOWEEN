@@ -204,7 +204,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       stateRef.current.costume
     );
     avatarRef.current = avatar;
-    avatar.group.position.set(0, 0, 0);
+    // Initial position in front of start gate, facing camera so face is visible
+    avatar.group.position.set(0, 0, -2.4);
+    avatar.group.rotation.y = Math.PI;
     scene.add(avatar.group);
 
     const sign: ArrivalSignObject = createArrivalSign(stateRef.current.childName);
@@ -213,9 +215,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     sign.group.position.set(world.group.position.x, 0, 80);
     scene.add(sign.group);
 
-    // Cartel de Largada: positioned at the starting line of the path at Z = -1.8
+    // Cartel de Largada: positioned at the starting gate of the path at Z = 0
     const startSign = createStartSign();
-    startSign.group.position.set(0, 0, -1.8);
+    startSign.group.position.set(0, 0, 0);
     scene.add(startSign.group);
 
     const confetti: ConfettiSystem = create3DConfettiSystem(320);
@@ -223,21 +225,23 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     scene.add(confetti.group);
 
     // 6. PLAYER CONTROLLER STATE
-    const playerPos = new THREE.Vector3(0, 0, 0);
+    // The player starts in front of the start gate (Z = -2.4), facing the camera (angle = PI)
+    // so their face and costume are clearly visible before the run begins!
+    const playerPos = new THREE.Vector3(0, 0, -2.4);
     let playerYVel = 0;
     let isGrounded = true;
-    let playerFacingAngle = 0;
+    let playerFacingAngle = Math.PI; // Facing camera so face is visible before starting
     const playerSpeed = 7.2; // comfortable, responsive walking speed
     const jumpSpeed = 6.8;
     const gravity = -18.0;
 
     let hasTriggeredArrival = false;
-    let victoryCameraAngle = 0;
     let victorySettledReported = false;
+    let lastGameState = stateRef.current.gameState;
 
-    // Smooth camera target
-    const currentCamPos = new THREE.Vector3(0, 3, -6);
-    const currentLookAt = new THREE.Vector3(0, 1.2, 0);
+    // Smooth camera target: initial frame places the player in front of the gate with their face clearly visible
+    const currentCamPos = new THREE.Vector3(0, 2.2, -7.5);
+    const currentLookAt = new THREE.Vector3(0, 1.25, -0.6);
 
     // 7. GAME ANIMATION LOOP
     const clock = new THREE.Clock();
@@ -248,8 +252,25 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       const currentGameState = stateRef.current.gameState;
       const inputs = stateRef.current.inputState;
 
+      // Handle transition to PLAYING (fresh start or replay):
+      // Reset player in front of gate, facing the camera with face clearly visible
+      if (lastGameState !== 'PLAYING' && currentGameState === 'PLAYING') {
+        playerPos.set(0, 0, -2.4);
+        playerYVel = 0;
+        isGrounded = true;
+        playerFacingAngle = Math.PI;
+        hasTriggeredArrival = false;
+        victorySettledReported = false;
+        currentCamPos.set(0, 2.2, -7.5);
+        currentLookAt.set(0, 1.25, -0.6);
+        camera.position.copy(currentCamPos);
+        camera.lookAt(currentLookAt);
+      }
+      lastGameState = currentGameState;
+
       // Update world animations (pumpkins, candies, flying ghosts, witches)
       world.update(delta);
+      startSign.group.visible = (currentGameState !== 'START');
 
       const isPlaying = currentGameState === 'PLAYING';
       const isArrivalOrVictory = currentGameState === 'ARRIVAL' || currentGameState === 'VICTORY';
@@ -261,8 +282,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         if (inputs.forward) moveZ += 1;
         if (inputs.backward) moveZ -= 1;
-        if (inputs.left) moveX += 1;
-        if (inputs.right) moveX -= 1;
+        if (inputs.left) moveX -= 1;  // Left moves avatar left
+        if (inputs.right) moveX += 1; // Right moves avatar right
 
         const isMoving = moveX !== 0 || moveZ !== 0;
 

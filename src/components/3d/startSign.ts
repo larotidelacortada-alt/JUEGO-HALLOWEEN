@@ -16,21 +16,21 @@ export function createStartSign(): StartSignObject {
   });
 
   // Left & Right posts
-  const postGeo = new THREE.CylinderGeometry(0.14, 0.16, 3.8, 12);
+  const postGeo = new THREE.CylinderGeometry(0.15, 0.17, 4.3, 12);
   const leftPost = new THREE.Mesh(postGeo, woodMat);
-  leftPost.position.set(-2.2, 1.9, 0);
+  leftPost.position.set(-2.3, 2.15, 0);
   leftPost.castShadow = true;
   group.add(leftPost);
 
   const rightPost = new THREE.Mesh(postGeo, woodMat);
-  rightPost.position.set(2.2, 1.9, 0);
+  rightPost.position.set(2.3, 2.15, 0);
   rightPost.castShadow = true;
   group.add(rightPost);
 
   // Cross beam
-  const beamGeo = new THREE.BoxGeometry(4.7, 0.22, 0.25);
+  const beamGeo = new THREE.BoxGeometry(4.9, 0.24, 0.26);
   const beam = new THREE.Mesh(beamGeo, woodMat);
-  beam.position.set(0, 3.5, 0);
+  beam.position.set(0, 3.95, 0);
   beam.castShadow = true;
   group.add(beam);
 
@@ -44,11 +44,11 @@ export function createStartSign(): StartSignObject {
   const finialGeo = new THREE.SphereGeometry(0.24, 14, 12);
 
   const leftFinial = new THREE.Mesh(finialGeo, pumpkinFinialMat);
-  leftFinial.position.set(-2.2, 3.9, 0);
+  leftFinial.position.set(-2.3, 4.35, 0);
   group.add(leftFinial);
 
   const rightFinial = new THREE.Mesh(finialGeo, pumpkinFinialMat);
-  rightFinial.position.set(2.2, 3.9, 0);
+  rightFinial.position.set(2.3, 4.35, 0);
   group.add(rightFinial);
 
   // Signboard geometry
@@ -184,14 +184,14 @@ export function createStartSign(): StartSignObject {
   ];
 
   const boardMesh = new THREE.Mesh(boardGeo, materials);
-  boardMesh.position.set(0, 2.3, 0);
+  boardMesh.position.set(0, 2.75, 0);
   boardMesh.castShadow = true;
   group.add(boardMesh);
 
   // Warm hanging lanterns
   const createLantern = (x: number) => {
     const lGroup = new THREE.Group();
-    lGroup.position.set(x, 3.1, 0.2);
+    lGroup.position.set(x, 3.55, 0.2);
 
     const wireGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.35, 8);
     const wire = new THREE.Mesh(wireGeo, woodMat);
@@ -215,11 +215,11 @@ export function createStartSign(): StartSignObject {
     return lGroup;
   };
 
-  group.add(createLantern(-1.8));
-  group.add(createLantern(1.8));
+  group.add(createLantern(-1.9));
+  group.add(createLantern(1.9));
 
   // Starting line checkered ribbon on the ground
-  const ribbonGeo = new THREE.PlaneGeometry(4.0, 0.5);
+  const ribbonGeo = new THREE.PlaneGeometry(4.4, 0.6);
   const ribbonCanvas = document.createElement('canvas');
   ribbonCanvas.width = 512;
   ribbonCanvas.height = 64;
@@ -235,7 +235,7 @@ export function createStartSign(): StartSignObject {
   });
   const ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
   ribbonMesh.rotation.x = -Math.PI / 2;
-  ribbonMesh.position.set(0, 0.03, 0.6);
+  ribbonMesh.position.set(0, 0.03, 0.0);
   ribbonMesh.receiveShadow = true;
   group.add(ribbonMesh);
 
