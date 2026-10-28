@@ -282,8 +282,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
         if (inputs.forward) moveZ += 1;
         if (inputs.backward) moveZ -= 1;
-        if (inputs.left) moveX -= 1;  // Left moves avatar left
-        if (inputs.right) moveX += 1; // Right moves avatar right
+        if (inputs.left) moveX += 1;
+        if (inputs.right) moveX -= 1;
 
         const isMoving = moveX !== 0 || moveZ !== 0;
 
