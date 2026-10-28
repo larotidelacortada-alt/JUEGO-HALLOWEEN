@@ -73,8 +73,8 @@ export class VideoRecorder {
       this.recordedResult = null;
       this.startTime = performance.now();
 
-      // 30 FPS stream from canvas
-      const canvasStream = canvas.captureStream(30);
+      // 60 FPS stream from canvas for high-definition smooth recording
+      const canvasStream = canvas.captureStream(60);
       const tracks: MediaStreamTrack[] = [...canvasStream.getVideoTracks()];
 
       // Add audio track if available
@@ -87,7 +87,7 @@ export class VideoRecorder {
 
       this.mediaRecorder = new MediaRecorder(combinedStream, {
         mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : undefined,
-        videoBitsPerSecond: 3000000, // 3.0 Mbps crisp quality
+        videoBitsPerSecond: 10000000, // 10.0 Mbps Full HD crisp bitrate
       });
 
       this.mediaRecorder.ondataavailable = (event) => {

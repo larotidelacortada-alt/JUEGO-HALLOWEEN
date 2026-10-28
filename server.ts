@@ -39,16 +39,17 @@ async function startServer() {
 
       await fs.promises.writeFile(inputPath, inputBuffer);
 
-      // FFmpeg command: H.264 baseline/main ultrafast preset + AAC audio + faststart
+      // FFmpeg command: H.264 High Profile, CRF 19 (visually lossless Full HD master quality), AAC 192k, faststart
       try {
         await execFileAsync('ffmpeg', [
           '-y',
           '-i', inputPath,
           '-c:v', 'libx264',
-          '-preset', 'ultrafast',
+          '-preset', 'veryfast',
+          '-crf', '19',
           '-pix_fmt', 'yuv420p',
           '-c:a', 'aac',
-          '-b:a', '128k',
+          '-b:a', '192k',
           '-movflags', '+faststart',
           outputPath,
         ]);
@@ -58,7 +59,8 @@ async function startServer() {
           '-y',
           '-i', inputPath,
           '-c:v', 'libx264',
-          '-preset', 'ultrafast',
+          '-preset', 'veryfast',
+          '-crf', '19',
           '-pix_fmt', 'yuv420p',
           '-movflags', '+faststart',
           outputPath,
